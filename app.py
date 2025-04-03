@@ -799,11 +799,29 @@ def update_stock_data(symbol, n_clicks):
     
     fig.update_layout(
         title="",  # Remove title to avoid duplication
-        xaxis_title="Date",
-        yaxis_title="Price ($)",
+        xaxis_title=dict(text="Date", font=dict(color="black")),
+        yaxis_title=dict(text="Price ($)", font=dict(color="black")),
         xaxis_rangeslider_visible=False,
         height=400,
-        margin=dict(l=50, r=50, t=50, b=50)
+        margin=dict(l=50, r=50, t=50, b=50),
+        plot_bgcolor='white',  # Set plot background to white
+        paper_bgcolor='white',  # Set paper background to white
+        xaxis=dict(
+            showgrid=False,  # Remove x-axis gridlines
+            color='#d3d3d3',  # Set x-axis color to light grey
+            linecolor='#d3d3d3',  # Set x-axis line color to light grey
+            mirror=True,  # Make axis line appear on opposite side as well
+            ticks='outside',  # Put ticks outside
+            tickfont=dict(color='black')  # Set tick font color to black
+        ),
+        yaxis=dict(
+            showgrid=False,  # Remove y-axis gridlines
+            color='#d3d3d3',  # Set y-axis color to light grey
+            linecolor='#d3d3d3',  # Set y-axis line color to light grey
+            mirror=True,  # Make axis line appear on opposite side as well
+            ticks='outside',  # Put ticks outside
+            tickfont=dict(color='black')  # Set tick font color to black
+        )
     )
     
     # No annotation for current price as requested
@@ -893,11 +911,29 @@ def update_crypto_data(symbol, n_clicks):
     
     fig.update_layout(
         title="",  # Remove title to avoid duplication
-        xaxis_title="Date",
-        yaxis_title="Price ($)",
+        xaxis_title=dict(text="Date", font=dict(color="black")),
+        yaxis_title=dict(text="Price ($)", font=dict(color="black")),
         xaxis_rangeslider_visible=False,
         height=400,
-        margin=dict(l=50, r=50, t=50, b=50)
+        margin=dict(l=50, r=50, t=50, b=50),
+        plot_bgcolor='white',  # Set plot background to white
+        paper_bgcolor='white',  # Set paper background to white
+        xaxis=dict(
+            showgrid=False,  # Remove x-axis gridlines
+            color='#d3d3d3',  # Set x-axis color to light grey
+            linecolor='#d3d3d3',  # Set x-axis line color to light grey
+            mirror=True,  # Make axis line appear on opposite side as well
+            ticks='outside',  # Put ticks outside
+            tickfont=dict(color='black')  # Set tick font color to black
+        ),
+        yaxis=dict(
+            showgrid=False,  # Remove y-axis gridlines
+            color='#d3d3d3',  # Set y-axis color to light grey
+            linecolor='#d3d3d3',  # Set y-axis line color to light grey
+            mirror=True,  # Make axis line appear on opposite side as well
+            ticks='outside',  # Put ticks outside
+            tickfont=dict(color='black')  # Set tick font color to black
+        )
     )
     
     # No annotation for current price as requested
@@ -1088,11 +1124,29 @@ def update_stock_index_comparison(stock_symbol, index_symbol, n_clicks):
     
     stock_fig.update_layout(
         title="",
-        xaxis_title="Date",
-        yaxis_title="Price ($)",
+        xaxis_title=dict(text="Date", font=dict(color="black")),
+        yaxis_title=dict(text="Price ($)", font=dict(color="black")),
         xaxis_rangeslider_visible=False,
         height=400,
-        margin=dict(l=50, r=50, t=50, b=50)
+        margin=dict(l=50, r=50, t=50, b=50),
+        plot_bgcolor='white',  # Set plot background to white
+        paper_bgcolor='white',  # Set paper background to white
+        xaxis=dict(
+            showgrid=False,  # Remove x-axis gridlines
+            color='#d3d3d3',  # Set x-axis color to light grey
+            linecolor='#d3d3d3',  # Set x-axis line color to light grey
+            mirror=True,  # Make axis line appear on opposite side as well
+            ticks='outside',  # Put ticks outside
+            tickfont=dict(color='black')  # Set tick font color to black
+        ),
+        yaxis=dict(
+            showgrid=False,  # Remove y-axis gridlines
+            color='#d3d3d3',  # Set y-axis color to light grey
+            linecolor='#d3d3d3',  # Set y-axis line color to light grey
+            mirror=True,  # Make axis line appear on opposite side as well
+            ticks='outside',  # Put ticks outside
+            tickfont=dict(color='black')  # Set tick font color to black
+        )
     )
     
     # Format date to remove year and configure x-axis to handle weekends/gaps
@@ -1119,11 +1173,29 @@ def update_stock_index_comparison(stock_symbol, index_symbol, n_clicks):
     
     index_fig.update_layout(
         title="",
-        xaxis_title="Date",
-        yaxis_title="Price ($)",
+        xaxis_title=dict(text="Date", font=dict(color="black")),
+        yaxis_title=dict(text="Price ($)", font=dict(color="black")),
         xaxis_rangeslider_visible=False,
         height=400,
-        margin=dict(l=50, r=50, t=50, b=50)
+        margin=dict(l=50, r=50, t=50, b=50),
+        plot_bgcolor='white',  # Set plot background to white
+        paper_bgcolor='white',  # Set paper background to white
+        xaxis=dict(
+            showgrid=False,  # Remove x-axis gridlines
+            color='#d3d3d3',  # Set x-axis color to light grey
+            linecolor='#d3d3d3',  # Set x-axis line color to light grey
+            mirror=True,  # Make axis line appear on opposite side as well
+            ticks='outside',  # Put ticks outside
+            tickfont=dict(color='black')  # Set tick font color to black
+        ),
+        yaxis=dict(
+            showgrid=False,  # Remove y-axis gridlines
+            color='#d3d3d3',  # Set y-axis color to light grey
+            linecolor='#d3d3d3',  # Set y-axis line color to light grey
+            mirror=True,  # Make axis line appear on opposite side as well
+            ticks='outside',  # Put ticks outside
+            tickfont=dict(color='black')  # Set tick font color to black
+        )
     )
     
     # Format date to remove year and configure x-axis to handle weekends/gaps
@@ -1366,11 +1438,29 @@ def update_crypto_index_comparison(crypto_symbol, index_symbol, n_clicks):
     ))
     crypto_fig.update_layout(
         title="",  # Remove title
-        xaxis_title="Date",
-        yaxis_title="Price ($)",
+        xaxis_title=dict(text="Date", font=dict(color="black")),
+        yaxis_title=dict(text="Price ($)", font=dict(color="black")),
         height=400,
         margin=dict(l=40, r=40, t=40, b=40),
-        xaxis_rangeslider_visible=False  # Hide the rangeslider for a cleaner look
+        xaxis_rangeslider_visible=False,  # Hide the rangeslider for a cleaner look
+        plot_bgcolor='white',  # Set plot background to white
+        paper_bgcolor='white',  # Set paper background to white
+        xaxis=dict(
+            showgrid=False,  # Remove x-axis gridlines
+            color='#d3d3d3',  # Set x-axis color to light grey
+            linecolor='#d3d3d3',  # Set x-axis line color to light grey
+            mirror=True,  # Make axis line appear on opposite side as well
+            ticks='outside',  # Put ticks outside
+            tickfont=dict(color='black')  # Set tick font color to black
+        ),
+        yaxis=dict(
+            showgrid=False,  # Remove y-axis gridlines
+            color='#d3d3d3',  # Set y-axis color to light grey
+            linecolor='#d3d3d3',  # Set y-axis line color to light grey
+            mirror=True,  # Make axis line appear on opposite side as well
+            ticks='outside',  # Put ticks outside
+            tickfont=dict(color='black')  # Set tick font color to black
+        )
     )
     
     # Format date to remove year
@@ -1389,11 +1479,29 @@ def update_crypto_index_comparison(crypto_symbol, index_symbol, n_clicks):
     ))
     index_fig.update_layout(
         title="",  # Remove title
-        xaxis_title="Date",
-        yaxis_title="Price ($)",
+        xaxis_title=dict(text="Date", font=dict(color="black")),
+        yaxis_title=dict(text="Price ($)", font=dict(color="black")),
         height=400,
         margin=dict(l=40, r=40, t=40, b=40),
-        xaxis_rangeslider_visible=False  # Hide the rangeslider for a cleaner look
+        xaxis_rangeslider_visible=False,  # Hide the rangeslider for a cleaner look
+        plot_bgcolor='white',  # Set plot background to white
+        paper_bgcolor='white',  # Set paper background to white
+        xaxis=dict(
+            showgrid=False,  # Remove x-axis gridlines
+            color='#d3d3d3',  # Set x-axis color to light grey
+            linecolor='#d3d3d3',  # Set x-axis line color to light grey
+            mirror=True,  # Make axis line appear on opposite side as well
+            ticks='outside',  # Put ticks outside
+            tickfont=dict(color='black')  # Set tick font color to black
+        ),
+        yaxis=dict(
+            showgrid=False,  # Remove y-axis gridlines
+            color='#d3d3d3',  # Set y-axis color to light grey
+            linecolor='#d3d3d3',  # Set y-axis line color to light grey
+            mirror=True,  # Make axis line appear on opposite side as well
+            ticks='outside',  # Put ticks outside
+            tickfont=dict(color='black')  # Set tick font color to black
+        )
     )
     
     # Format date to remove year
