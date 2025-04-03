@@ -27,11 +27,11 @@ crypto_fetcher = CryptoDataFetcher(use_mock_data=USE_MOCK_DATA)
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.title = "Market Analytics"
 
-# Check initial API call limits
-fmp_calls_remaining = "Unknown" if USE_MOCK_DATA else stock_fetcher.get_remaining_calls()
-cmc_calls_remaining = "Unknown" if USE_MOCK_DATA else crypto_fetcher.get_remaining_calls()
+# Check API rate limits
+fmp_calls_remaining = "Unknown (FMP doesn't provide rate limit info)" if USE_MOCK_DATA else "Unknown (FMP doesn't provide rate limit info)"
+cryptocompare_calls_remaining = "Unknown" if USE_MOCK_DATA else crypto_fetcher.get_remaining_calls()
 print(f"Initial FMP API calls remaining: {fmp_calls_remaining}")
-print(f"Initial CMC API calls remaining: {cmc_calls_remaining}")
+print(f"Initial CryptoCompare API calls remaining: {cryptocompare_calls_remaining}")
 
 # Define default symbols
 DEFAULT_STOCK = "AAPL"
@@ -555,7 +555,7 @@ app.layout = html.Div([
                     dcc.Dropdown(
                         id="crypto-index-dropdown",
                         options=[],
-                        value="GLOBAL_MCAP",  # Default to Global Market Cap index
+                        value="TOTAL",  # Default to Total Crypto Market Cap index
                         clearable=False,
                         className="mb-3"
                     ),
@@ -636,25 +636,6 @@ app.layout = html.Div([
                             ])
                         ])
                     ], className="mb-3"),
-                    dbc.Card([
-                        dbc.CardHeader(html.H5("Beta", className="card-title")),
-                        dbc.CardBody([
-                            html.Div([
-                                html.P("0.00", id="crypto-beta-value", className="card-text mb-0"),
-                                dbc.Button("What does this mean?", id="crypto-beta-info-button", color="link", className="p-0 mt-2"),
-                                dbc.Collapse(
-                                    dbc.Card(
-                                        dbc.CardBody(
-                                            "Beta measures the volatility of a cryptocurrency compared to the index. A beta of 1.0 means the crypto moves with the market. A beta greater than 1.0 indicates the crypto is more volatile than the market, while a beta less than 1.0 indicates the crypto is less volatile than the market."
-                                        ),
-                                        className="mt-2"
-                                    ),
-                                    id="crypto-beta-info-collapse",
-                                    is_open=False,
-                                ),
-                            ])
-                        ])
-                    ]),
                 ], width=12)
             ]),
             
@@ -839,9 +820,18 @@ def update_stock_data(symbol, n_clicks):
     # Calculate metrics
     metrics = DataProcessor.calculate_metrics(stock_data)
     
-    # Create colored price display to match crypto tab style
+    # Calculate percent change
+    percent_change = ((current_price - opening_price) / opening_price) * 100 if opening_price != 0 else 0
+    
+    # Determine arrow based on price change
+    arrow = "▲" if percent_change >= 0 else "▼"
+    
+    # Create colored price display with percent change and arrow
     price_display = html.Div([
-        html.H4(f"${current_price:,.2f}", className="mb-0", style={"color": price_color}),
+        html.H4([
+            f"${current_price:,.2f} ",
+            html.Span(f"{arrow} {abs(percent_change):.2f}%", style={"color": price_color, "fontSize": "0.8em"})
+        ], className="mb-0", style={"color": price_color}),
         html.P("Current Price", className="text-muted")
     ], className="text-center")
     
@@ -924,9 +914,18 @@ def update_crypto_data(symbol, n_clicks):
     # Calculate metrics
     metrics = DataProcessor.calculate_metrics(crypto_data)
     
-    # Create colored price display to match crypto tab style
+    # Calculate percent change
+    percent_change = ((current_price - opening_price) / opening_price) * 100 if opening_price != 0 else 0
+    
+    # Determine arrow based on price change
+    arrow = "▲" if percent_change >= 0 else "▼"
+    
+    # Create colored price display with percent change and arrow
     price_display = html.Div([
-        html.H4(f"${current_price:,.2f}", className="mb-0", style={"color": price_color}),
+        html.H4([
+            f"${current_price:,.2f} ",
+            html.Span(f"{arrow} {abs(percent_change):.2f}%", style={"color": price_color, "fontSize": "0.8em"})
+        ], className="mb-0", style={"color": price_color}),
         html.P("Current Price", className="text-muted")
     ], className="text-center")
     
@@ -998,9 +997,9 @@ def update_refresh_status(n_clicks):
         # Log API calls to console for debugging
         if not USE_MOCK_DATA:
             fmp_calls = stock_fetcher.get_remaining_calls() or "Unknown"
-            cmc_calls = crypto_fetcher.get_remaining_calls() or "Unknown"
+            crypto_calls = crypto_fetcher.get_remaining_calls() or "Unknown"
             print(f"FMP API Calls remaining: {fmp_calls}")
-            print(f"CMC API Calls remaining: {cmc_calls}")
+            print(f"CryptoCompare API Calls remaining: {crypto_calls}")
             return html.Span("Data refreshed!", style={"color": "green"})
         else:
             print("Using mock data - no API calls made")
@@ -1146,14 +1145,28 @@ def update_stock_index_comparison(stock_symbol, index_symbol, n_clicks):
     stock_price_color = "green" if stock_current_price >= stock_opening_price else "red"
     index_price_color = "green" if index_current_price >= index_opening_price else "red"
     
-    # Create colored price displays to match crypto tab style
+    # Calculate percent changes
+    stock_percent_change = ((stock_current_price - stock_opening_price) / stock_opening_price) * 100 if stock_opening_price != 0 else 0
+    index_percent_change = ((index_current_price - index_opening_price) / index_opening_price) * 100 if index_opening_price != 0 else 0
+    
+    # Determine arrows based on price changes
+    stock_arrow = "▲" if stock_percent_change >= 0 else "▼"
+    index_arrow = "▲" if index_percent_change >= 0 else "▼"
+    
+    # Create colored price displays with percent change and arrow
     stock_price_display = html.Div([
-        html.H4(f"${stock_current_price:,.2f}", className="mb-0", style={"color": stock_price_color}),
+        html.H4([
+            f"${stock_current_price:,.2f} ",
+            html.Span(f"{stock_arrow} {abs(stock_percent_change):.2f}%", style={"color": stock_price_color, "fontSize": "0.8em"})
+        ], className="mb-0", style={"color": stock_price_color}),
         html.P("Current Price", className="text-muted")
     ], className="text-center")
     
     index_price_display = html.Div([
-        html.H4(f"${index_current_price:,.2f}", className="mb-0", style={"color": index_price_color}),
+        html.H4([
+            f"${index_current_price:,.2f} ",
+            html.Span(f"{index_arrow} {abs(index_percent_change):.2f}%", style={"color": index_price_color, "fontSize": "0.8em"})
+        ], className="mb-0", style={"color": index_price_color}),
         html.P("Current Price", className="text-muted")
     ],
         className="text-center"
@@ -1285,15 +1298,7 @@ def toggle_crypto_alpha_info(n_clicks, is_open):
     return is_open
 
 
-@app.callback(
-    Output("crypto-beta-info-collapse", "is_open"),
-    Input("crypto-beta-info-button", "n_clicks"),
-    State("crypto-beta-info-collapse", "is_open"),
-)
-def toggle_crypto_beta_info(n_clicks, is_open):
-    if n_clicks:
-        return not is_open
-    return is_open
+# Crypto beta info toggle callback removed
 
 
 # Callback for crypto vs crypto index comparison
@@ -1305,7 +1310,7 @@ def toggle_crypto_beta_info(n_clicks, is_open):
         Output("crypto-index-price-display", "children"),
         Output("crypto-index-correlation-value", "children"),
         Output("crypto-alpha-value", "children"),
-        Output("crypto-beta-value", "children"),
+        # Beta output removed
         # Crypto metrics table outputs
         Output("crypto-comparison-open-row", "children"),
         Output("crypto-comparison-high-row", "children"),
@@ -1401,9 +1406,18 @@ def update_crypto_index_comparison(crypto_symbol, index_symbol, n_clicks):
     # Determine price color based on comparison with opening price
     crypto_price_color = "green" if current_crypto_price >= crypto_opening_price else "red"
     
-    # Create colored price display
+    # Calculate percent change for crypto
+    crypto_percent_change = ((current_crypto_price - crypto_opening_price) / crypto_opening_price) * 100 if crypto_opening_price != 0 else 0
+    
+    # Determine arrow based on price change
+    crypto_arrow = "▲" if crypto_percent_change >= 0 else "▼"
+    
+    # Create colored price display with percent change and arrow
     crypto_price_display = html.Div([
-        html.H4(f"${current_crypto_price:,.2f}", className="mb-0", style={"color": crypto_price_color}),
+        html.H4([
+            f"${current_crypto_price:,.2f} ",
+            html.Span(f"{crypto_arrow} {abs(crypto_percent_change):.2f}%", style={"color": crypto_price_color, "fontSize": "0.8em"})
+        ], className="mb-0", style={"color": crypto_price_color}),
         html.P("Current Price", className="text-muted")
     ], className="text-center")
     
@@ -1413,9 +1427,18 @@ def update_crypto_index_comparison(crypto_symbol, index_symbol, n_clicks):
     # Determine price color based on comparison with opening price
     index_price_color = "green" if current_index_price >= index_opening_price else "red"
     
-    # Create colored price display
+    # Calculate percent change for index
+    index_percent_change = ((current_index_price - index_opening_price) / index_opening_price) * 100 if index_opening_price != 0 else 0
+    
+    # Determine arrow based on price change
+    index_arrow = "▲" if index_percent_change >= 0 else "▼"
+    
+    # Create colored price display with percent change and arrow
     index_price_display = html.Div([
-        html.H4(f"${current_index_price:,.2f}", className="mb-0", style={"color": index_price_color}),
+        html.H4([
+            f"${current_index_price:,.2f} ",
+            html.Span(f"{index_arrow} {abs(index_percent_change):.2f}%", style={"color": index_price_color, "fontSize": "0.8em"})
+        ], className="mb-0", style={"color": index_price_color}),
         html.P("Current Price", className="text-muted")
     ], className="text-center")
     
@@ -1427,8 +1450,7 @@ def update_crypto_index_comparison(crypto_symbol, index_symbol, n_clicks):
     relative_performance = comparison['relative_performance']
     alpha = f"{relative_performance:.2f}%"
     
-    # Calculate beta (volatility ratio)
-    beta = f"{comparison['volatility_ratio']:.2f}"
+    # Beta calculation removed
     
     # Calculate metrics for crypto
     crypto_metrics = DataProcessor.calculate_metrics(crypto_data)
@@ -1451,7 +1473,7 @@ def update_crypto_index_comparison(crypto_symbol, index_symbol, n_clicks):
     index_fifty_day_row = [html.Td("Fifty Day Avg"), html.Td(f"${index_metrics['fifty_day_avg']:,.2f}")]
     
     return (
-        crypto_fig, index_fig, crypto_price_display, index_price_display, correlation, alpha, beta,
+        crypto_fig, index_fig, crypto_price_display, index_price_display, correlation, alpha,
         crypto_open_row, crypto_high_row, crypto_low_row, crypto_prev_close_row, crypto_fifty_day_row,
         index_open_row, index_high_row, index_low_row, index_prev_close_row, index_fifty_day_row
     )
@@ -1473,7 +1495,7 @@ def preload_data():
     # Preload index data for default index
     INDEX_DATA[DEFAULT_INDEX] = stock_fetcher.get_stock_data(DEFAULT_INDEX)
     # Preload crypto index data for default crypto index (Global Market Cap)
-    CRYPTO_DATA["INDEX_GLOBAL_MCAP"] = crypto_fetcher.get_crypto_index_data("GLOBAL_MCAP")
+    CRYPTO_DATA["INDEX_TOTAL"] = crypto_fetcher.get_crypto_index_data("TOTAL")
     print("Data preloading complete!")
 
 if __name__ == "__main__":

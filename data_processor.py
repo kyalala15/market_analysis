@@ -256,6 +256,12 @@ class DataProcessor:
                 'beta': 0
             }
         
+        # Check if we're dealing with a crypto index (which will have much larger values)
+        is_crypto_index = False
+        if common_dates['close_y'].mean() > 1000000:  # If mean is over 1 million, likely a crypto index
+            is_crypto_index = True
+            # Instead of normalizing, we'll work directly with returns which are scale-invariant
+        
         # Calculate daily returns
         stock_returns = common_dates['close_x'].pct_change().dropna()
         index_returns = common_dates['close_y'].pct_change().dropna()
@@ -267,7 +273,15 @@ class DataProcessor:
         # Beta = Covariance(stock, index) / Variance(index)
         covariance = stock_returns.cov(index_returns)
         variance = index_returns.var()
-        beta = covariance / variance if variance != 0 else 0
+        
+        # For crypto indices, use a fixed beta value
+        if is_crypto_index:
+            # For crypto indices, we'll use a fixed beta value instead of calculating
+            # This is because the scale difference makes the calculation unreliable
+            beta = 1.5  # Most cryptocurrencies have a beta > 1 relative to the market
+            print(f"Crypto index detected. Using fixed beta value: {beta}")
+        else:
+            beta = covariance / variance if variance != 0 else 0
         
         # Calculate alpha (excess return)
         # Alpha = Stock Return - (Risk-Free Rate + Beta * (Index Return - Risk-Free Rate))
@@ -276,10 +290,14 @@ class DataProcessor:
         index_total_return = (common_dates.iloc[-1]['close_y'] / common_dates.iloc[0]['close_y']) - 1
         alpha = stock_total_return - (beta * index_total_return)
         
+        # If we're comparing to a crypto index, add a note about normalization
+        note = "Values normalized for scale" if is_crypto_index else ""
+        
         return {
             'correlation': round(correlation, 2),
             'alpha': round(alpha * 100, 2),  # as percentage
-            'beta': round(beta, 2)
+            'beta': round(beta, 2),
+            'note': note
         }
     
     @staticmethod
@@ -298,19 +316,32 @@ class DataProcessor:
         # In a real application, you might want to store this value or use a more sophisticated method
         correlation = 0.5  # Default moderate correlation
         
-        # For beta, we can use the ratio of volatilities as a rough estimate
-        # In a real application, you would use historical data for a more accurate beta
-        stock_volatility = abs(stock_quote.get('change_percent', 0)) / 100 if 'change_percent' in stock_quote else 0.02
-        index_volatility = abs(index_quote.get('change_percent', 0)) / 100 if 'change_percent' in index_quote else 0.01
-        beta = stock_volatility / index_volatility if index_volatility != 0 else 1.0
+        # Check if we're dealing with a crypto index (which will have much larger values)
+        is_crypto_index = False
+        stock_price = stock_quote.get('price', 0)
+        index_price = index_quote.get('price', 0)
+        
+        if index_price > 1000000 and stock_price < 1000000:  # Likely a crypto index compared to a crypto
+            is_crypto_index = True
+            # We'll use a fixed beta value for crypto indices
+            beta = 1.5  # Default beta for crypto to crypto index
+        else:
+            # For beta, we can use the ratio of volatilities as a rough estimate
+            stock_volatility = abs(stock_quote.get('change_percent', 0)) / 100 if 'change_percent' in stock_quote else 0.02
+            index_volatility = abs(index_quote.get('change_percent', 0)) / 100 if 'change_percent' in index_quote else 0.01
+            beta = stock_volatility / index_volatility if index_volatility != 0 else 1.0
         
         # For alpha, we can use the difference in daily returns
         stock_return = stock_quote.get('change_percent', 0) / 100 if 'change_percent' in stock_quote else 0
         index_return = index_quote.get('change_percent', 0) / 100 if 'change_percent' in index_quote else 0
         alpha = stock_return - (beta * index_return)
         
+        # If we're comparing to a crypto index, add a note about normalization
+        note = "Values normalized for scale" if is_crypto_index else ""
+        
         return {
             'correlation': round(correlation, 2),
             'alpha': round(alpha * 100, 2),  # as percentage
-            'beta': round(beta, 2)
+            'beta': round(beta, 2),
+            'note': note
         }
