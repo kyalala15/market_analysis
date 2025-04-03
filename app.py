@@ -8,7 +8,9 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 
-from data_fetcher import StockDataFetcher, CryptoDataFetcher, DEFAULT_USE_MOCK_DATA
+from config import DEFAULT_USE_MOCK_DATA
+from stock_fetcher import StockDataFetcher
+from crypto_fetcher import CryptoDataFetcher
 from data_processor import DataProcessor
 
 # Load environment variables
@@ -250,7 +252,7 @@ app.layout = html.Div([
                 dbc.Col([
                     html.H3("Select Stock", className="mt-4"),
                     dcc.Dropdown(
-                        id="stock-comparison-dropdown",
+                        id="stocks-tab-stock-dropdown",
                         options=[],
                         value=DEFAULT_STOCK,
                         clearable=False,
@@ -349,7 +351,7 @@ app.layout = html.Div([
                     dbc.Col([
                         html.H3("Stock", className="mt-4"),
                         dcc.Dropdown(
-                            id="stock-comparison-dropdown",
+                            id="stock-tab-comparison-dropdown",
                             options=[],
                             value=DEFAULT_STOCK,
                             clearable=False,
@@ -502,8 +504,161 @@ app.layout = html.Div([
         
         # Crypto Tab Content
         html.Div(id="crypto-tab-content", children=[
-            html.H3("Cryptocurrency Analysis", className="mt-4 text-center"),
-            html.P("This tab will show detailed cryptocurrency analysis.", className="text-center")
+            dbc.Row([
+                # Cryptocurrency selection
+                dbc.Col([
+                    html.H3("Crypto", className="mt-4"),
+                    dcc.Dropdown(
+                        id="crypto-comparison-dropdown",
+                        options=[],
+                        value=DEFAULT_CRYPTO,
+                        clearable=False,
+                        className="mb-3"
+                    ),
+                    html.Div(id="crypto-comparison-price-display", className="mb-2"),
+                    dcc.Graph(id="crypto-comparison-chart"),
+                    
+                    # Crypto metrics table
+                    html.Div([
+                        dbc.Table([
+                            html.Thead([
+                                html.Tr([
+                                    html.Th("Open"),
+                                    html.Th("$0"),
+                                ], id="crypto-comparison-open-row")
+                            ]),
+                            html.Tbody([
+                                html.Tr([
+                                    html.Td("Day High"),
+                                    html.Td("$0"),
+                                ], id="crypto-comparison-high-row"),
+                                html.Tr([
+                                    html.Td("Day Low"),
+                                    html.Td("$0"),
+                                ], id="crypto-comparison-low-row"),
+                                html.Tr([
+                                    html.Td("Previous Close"),
+                                    html.Td("$0"),
+                                ], id="crypto-comparison-prev-close-row"),
+                                html.Tr([
+                                    html.Td("Fifty Day Avg"),
+                                    html.Td("$0"),
+                                ], id="crypto-comparison-fifty-day-row"),
+                            ])
+                        ], bordered=True, hover=True, responsive=True, className="mt-3")
+                    ])
+                ], width=6),
+                
+                # Crypto Index selection
+                dbc.Col([
+                    html.H3("Crypto Index", className="mt-4"),
+                    dcc.Dropdown(
+                        id="crypto-index-dropdown",
+                        options=[],
+                        value="GLOBAL_MCAP",  # Default to Global Market Cap index
+                        clearable=False,
+                        className="mb-3"
+                    ),
+                    html.Div(id="crypto-index-price-display", className="mb-2"),
+                    dcc.Graph(id="crypto-index-chart"),
+                    
+                    # Index metrics table
+                    html.Div([
+                        dbc.Table([
+                            html.Thead([
+                                html.Tr([
+                                    html.Th("Open"),
+                                    html.Th("$0"),
+                                ], id="crypto-index-open-row")
+                            ]),
+                            html.Tbody([
+                                html.Tr([
+                                    html.Td("Day High"),
+                                    html.Td("$0"),
+                                ], id="crypto-index-high-row"),
+                                html.Tr([
+                                    html.Td("Day Low"),
+                                    html.Td("$0"),
+                                ], id="crypto-index-low-row"),
+                                html.Tr([
+                                    html.Td("Previous Close"),
+                                    html.Td("$0"),
+                                ], id="crypto-index-prev-close-row"),
+                                html.Tr([
+                                    html.Td("Fifty Day Avg"),
+                                    html.Td("$0"),
+                                ], id="crypto-index-fifty-day-row"),
+                            ])
+                        ], bordered=True, hover=True, responsive=True, className="mt-3")
+                    ])
+                ], width=6),
+            ]),
+            
+            # Crypto-Index comparison metrics
+            dbc.Row([
+                dbc.Col([
+                    html.H3("Crypto vs Index Metrics", className="mt-4"),
+                    dbc.Card([
+                        dbc.CardHeader(html.H5("Correlation", className="card-title")),
+                        dbc.CardBody([
+                            html.Div([
+                                html.P("0.00", id="crypto-index-correlation-value", className="card-text mb-0"),
+                                dbc.Button("What does this mean?", id="crypto-index-correlation-info-button", color="link", className="p-0 mt-2"),
+                                dbc.Collapse(
+                                    dbc.Card(
+                                        dbc.CardBody(
+                                            "Measures how the daily returns of the cryptocurrency and index move together. Values range from -1.0 to 1.0. A value of 1.0 indicates perfect positive correlation (assets move in the same direction), 0.0 indicates no correlation (assets move independently), and -1.0 indicates perfect negative correlation (assets move in opposite directions)."
+                                        ),
+                                        className="mt-2"
+                                    ),
+                                    id="crypto-index-correlation-info-collapse",
+                                    is_open=False,
+                                ),
+                            ])
+                        ])
+                    ], className="mb-3"),
+                    dbc.Card([
+                        dbc.CardHeader(html.H5("Alpha", className="card-title")),
+                        dbc.CardBody([
+                            html.Div([
+                                html.P("0.00%", id="crypto-alpha-value", className="card-text mb-0"),
+                                dbc.Button("What does this mean?", id="crypto-alpha-info-button", color="link", className="p-0 mt-2"),
+                                dbc.Collapse(
+                                    dbc.Card(
+                                        dbc.CardBody(
+                                            "Alpha measures the excess return of the cryptocurrency compared to the index. A positive alpha indicates the crypto has outperformed the index, while a negative alpha indicates the crypto has underperformed the index."
+                                        ),
+                                        className="mt-2"
+                                    ),
+                                    id="crypto-alpha-info-collapse",
+                                    is_open=False,
+                                ),
+                            ])
+                        ])
+                    ], className="mb-3"),
+                    dbc.Card([
+                        dbc.CardHeader(html.H5("Beta", className="card-title")),
+                        dbc.CardBody([
+                            html.Div([
+                                html.P("0.00", id="crypto-beta-value", className="card-text mb-0"),
+                                dbc.Button("What does this mean?", id="crypto-beta-info-button", color="link", className="p-0 mt-2"),
+                                dbc.Collapse(
+                                    dbc.Card(
+                                        dbc.CardBody(
+                                            "Beta measures the volatility of a cryptocurrency compared to the index. A beta of 1.0 means the crypto moves with the market. A beta greater than 1.0 indicates the crypto is more volatile than the market, while a beta less than 1.0 indicates the crypto is less volatile than the market."
+                                        ),
+                                        className="mt-2"
+                                    ),
+                                    id="crypto-beta-info-collapse",
+                                    is_open=False,
+                                ),
+                            ])
+                        ])
+                    ]),
+                ], width=12)
+            ]),
+            
+            # No duplicate tables needed here as they've been moved above
         ], style={"display": "none"}),
         
         # No interval component to avoid frequent API calls
@@ -541,23 +696,39 @@ def update_stock_options(active_tab):
 def update_index_options(active_tab):
     global INDEX_LIST
     if not INDEX_LIST:
-        # For demo purposes, use a limited list of popular index funds
-        INDEX_LIST = [
-            {"label": "S&P 500 ETF (SPY)", "value": "SPY"},
-            {"label": "Nasdaq 100 ETF (QQQ)", "value": "QQQ"},
-            {"label": "Dow Jones Industrial Average ETF (DIA)", "value": "DIA"},
-            {"label": "Russell 2000 ETF (IWM)", "value": "IWM"},
-            {"label": "Vanguard Total Stock Market ETF (VTI)", "value": "VTI"}
-        ]
-    return INDEX_LIST
+        # For demo purposes, use a limited list of popular indices
+        INDEX_LIST = stock_fetcher.get_available_stocks()
+        # Filter to only include indices
+        INDEX_LIST = [s for s in INDEX_LIST if s['symbol'] in ['SPY', 'QQQ', 'DIA', 'IWM', 'VTI']]
+    
+    return [{'label': f"{index['symbol']} - {index['name']}", 'value': index['symbol']} for index in INDEX_LIST]
 
 
 @app.callback(
-    Output("stock-comparison-dropdown", "options"),
+    Output("crypto-index-dropdown", "options"),
+    Input("tabs", "active_tab")
+)
+def update_crypto_index_options(active_tab):
+    # Get crypto indexes from the crypto fetcher
+    crypto_indexes = crypto_fetcher.get_available_crypto_indexes()
+    
+    return [{'label': f"{index['symbol']} - {index['name']}", 'value': index['symbol']} for index in crypto_indexes]
+
+
+@app.callback(
+    Output("stock-tab-comparison-dropdown", "options"),
     Input("tabs", "active_tab")
 )
 def update_stock_index_options(active_tab):
     # Use the same stock list for both dropdowns
+    return update_stock_options(active_tab)
+
+@app.callback(
+    Output("stocks-tab-stock-dropdown", "options"),
+    Input("tabs", "active_tab")
+)
+def update_stocks_tab_stock_options(active_tab):
+    # Use the same stock list for all stock dropdowns
     return update_stock_options(active_tab)
 
 @app.callback(
@@ -567,20 +738,34 @@ def update_stock_index_options(active_tab):
 def update_crypto_options(active_tab):
     global CRYPTO_LIST
     if not CRYPTO_LIST:
-        # For demo purposes, use a limited list of popular cryptocurrencies
-        CRYPTO_LIST = [
-            {"label": "Bitcoin (BTC)", "value": "BTC"},
-            {"label": "Ethereum (ETH)", "value": "ETH"},
-            {"label": "Binance Coin (BNB)", "value": "BNB"},
-            {"label": "Solana (SOL)", "value": "SOL"},
-            {"label": "XRP (XRP)", "value": "XRP"},
-            {"label": "Cardano (ADA)", "value": "ADA"},
-            {"label": "Dogecoin (DOGE)", "value": "DOGE"},
-            {"label": "Polkadot (DOT)", "value": "DOT"},
-            {"label": "Chainlink (LINK)", "value": "LINK"},
-            {"label": "Litecoin (LTC)", "value": "LTC"}
-        ]
-    return CRYPTO_LIST
+        # Get available cryptocurrencies from the API or mock data
+        CRYPTO_LIST = crypto_fetcher.get_available_cryptos()
+        
+        # If the list is empty (which shouldn't happen), fallback to a predefined list
+        if not CRYPTO_LIST:
+            CRYPTO_LIST = [
+                {"symbol": "BTC", "name": "Bitcoin"},
+                {"symbol": "ETH", "name": "Ethereum"},
+                {"symbol": "BNB", "name": "Binance Coin"},
+                {"symbol": "SOL", "name": "Solana"},
+                {"symbol": "XRP", "name": "XRP"},
+                {"symbol": "ADA", "name": "Cardano"},
+                {"symbol": "DOGE", "name": "Dogecoin"},
+                {"symbol": "DOT", "name": "Polkadot"},
+                {"symbol": "LINK", "name": "Chainlink"},
+                {"symbol": "LTC", "name": "Litecoin"}
+            ]
+    
+    return [{'label': f"{crypto['symbol']} - {crypto['name']}", 'value': crypto['symbol']} for crypto in CRYPTO_LIST]
+
+
+@app.callback(
+    Output("crypto-comparison-dropdown", "options"),
+    Input("tabs", "active_tab")
+)
+def update_crypto_comparison_options(active_tab):
+    # Reuse the same crypto list as the comparison tab
+    return update_crypto_options(active_tab)
 
 @app.callback(
     [
@@ -611,16 +796,18 @@ def update_stock_data(symbol, n_clicks):
     
     stock_data = STOCK_DATA[symbol]
     
-    # Create candlestick chart
-    fig = go.Figure(data=[go.Candlestick(
+    # Create candlestick chart - using the same configuration as crypto tab
+    fig = go.Figure()
+    fig.add_trace(go.Candlestick(
         x=stock_data['date'],
         open=stock_data['open'],
         high=stock_data['high'],
         low=stock_data['low'],
         close=stock_data['close'],
+        name=symbol,
         increasing_line_color='green',
         decreasing_line_color='red'
-    )])
+    ))
     
     # Get current price (last closing price) and opening price
     current_price = stock_data['close'].iloc[-1] if not stock_data.empty else 0
@@ -640,20 +827,23 @@ def update_stock_data(symbol, n_clicks):
     
     # No annotation for current price as requested
     
-    # Format date to remove year
-    fig.update_xaxes(tickformat='%b %d')
+    # Format date to remove year and configure x-axis to handle weekends/gaps
+    fig.update_xaxes(
+        tickformat='%b %d',
+        rangebreaks=[
+            # Hide weekends
+            dict(bounds=["sat", "mon"])
+        ]
+    )
     
     # Calculate metrics
     metrics = DataProcessor.calculate_metrics(stock_data)
     
-    # Create colored price display
-    price_display = html.H5(
-        children=[
-            f"{symbol} Stock Price - Current: ",
-            html.Span(f"${current_price:,.2f}", style={"color": price_color})
-        ],
-        className="text-center"
-    )
+    # Create colored price display to match crypto tab style
+    price_display = html.Div([
+        html.H4(f"${current_price:,.2f}", className="mb-0", style={"color": price_color}),
+        html.P("Current Price", className="text-muted")
+    ], className="text-center")
     
     # Update table rows
     open_row = [html.Th("Open"), html.Th(f"${metrics['open']:,.2f}")]
@@ -722,20 +912,23 @@ def update_crypto_data(symbol, n_clicks):
     
     # No annotation for current price as requested
     
-    # Format date to remove year
-    fig.update_xaxes(tickformat='%b %d')
+    # Format date to remove year and configure x-axis to handle weekends/gaps
+    fig.update_xaxes(
+        tickformat='%b %d',
+        rangebreaks=[
+            # Hide weekends
+            dict(bounds=["sat", "mon"])
+        ]
+    )
     
     # Calculate metrics
     metrics = DataProcessor.calculate_metrics(crypto_data)
     
-    # Create colored price display
-    price_display = html.H5(
-        children=[
-            f"{symbol}-USD Price - Current: ",
-            html.Span(f"${current_price:,.2f}", style={"color": price_color})
-        ],
-        className="text-center"
-    )
+    # Create colored price display to match crypto tab style
+    price_display = html.Div([
+        html.H4(f"${current_price:,.2f}", className="mb-0", style={"color": price_color}),
+        html.P("Current Price", className="text-muted")
+    ], className="text-center")
     
     # Update table rows
     open_row = [html.Th("Open"), html.Th(f"${metrics['open']:,.2f}")]
@@ -811,7 +1004,7 @@ def update_refresh_status(n_clicks):
             return html.Span("Data refreshed!", style={"color": "green"})
         else:
             print("Using mock data - no API calls made")
-            return html.Span("Data refreshed! (using mock data)", style={"color": "green"})
+            return html.Span("Data refreshed!", style={"color": "green"})
     return ""
 
 
@@ -856,7 +1049,7 @@ def update_tab_content(active_tab):
         Output("index-fifty-day-row", "children")
     ],
     [
-        Input("stock-comparison-dropdown", "value"),
+        Input("stock-tab-comparison-dropdown", "value"),
         Input("index-dropdown", "value"),
         Input("refresh-button", "n_clicks")
     ]
@@ -881,16 +1074,18 @@ def update_stock_index_comparison(stock_symbol, index_symbol, n_clicks):
     stock_data = STOCK_DATA[stock_symbol]
     index_data = INDEX_DATA[index_symbol]
     
-    # Create stock chart
-    stock_fig = go.Figure(data=[go.Candlestick(
+    # Create stock chart - using the same configuration as crypto tab
+    stock_fig = go.Figure()
+    stock_fig.add_trace(go.Candlestick(
         x=stock_data['date'],
         open=stock_data['open'],
         high=stock_data['high'],
         low=stock_data['low'],
         close=stock_data['close'],
+        name=stock_symbol,
         increasing_line_color='green',
         decreasing_line_color='red'
-    )])
+    ))
     
     stock_fig.update_layout(
         title="",
@@ -901,19 +1096,27 @@ def update_stock_index_comparison(stock_symbol, index_symbol, n_clicks):
         margin=dict(l=50, r=50, t=50, b=50)
     )
     
-    # Format date to remove year
-    stock_fig.update_xaxes(tickformat='%b %d')
+    # Format date to remove year and configure x-axis to handle weekends/gaps
+    stock_fig.update_xaxes(
+        tickformat='%b %d',
+        rangebreaks=[
+            # Hide weekends
+            dict(bounds=["sat", "mon"])
+        ]
+    )
     
-    # Create index chart
-    index_fig = go.Figure(data=[go.Candlestick(
+    # Create index chart - using the same configuration as crypto tab
+    index_fig = go.Figure()
+    index_fig.add_trace(go.Candlestick(
         x=index_data['date'],
         open=index_data['open'],
         high=index_data['high'],
         low=index_data['low'],
         close=index_data['close'],
+        name=index_symbol,
         increasing_line_color='green',
         decreasing_line_color='red'
-    )])
+    ))
     
     index_fig.update_layout(
         title="",
@@ -924,8 +1127,14 @@ def update_stock_index_comparison(stock_symbol, index_symbol, n_clicks):
         margin=dict(l=50, r=50, t=50, b=50)
     )
     
-    # Format date to remove year
-    index_fig.update_xaxes(tickformat='%b %d')
+    # Format date to remove year and configure x-axis to handle weekends/gaps
+    index_fig.update_xaxes(
+        tickformat='%b %d',
+        rangebreaks=[
+            # Hide weekends
+            dict(bounds=["sat", "mon"])
+        ]
+    )
     
     # Get current prices and opening prices
     stock_current_price = stock_data['close'].iloc[-1] if not stock_data.empty else 0
@@ -937,20 +1146,16 @@ def update_stock_index_comparison(stock_symbol, index_symbol, n_clicks):
     stock_price_color = "green" if stock_current_price >= stock_opening_price else "red"
     index_price_color = "green" if index_current_price >= index_opening_price else "red"
     
-    # Create colored price displays
-    stock_price_display = html.H5(
-        children=[
-            f"{stock_symbol} Stock Price - Current: ",
-            html.Span(f"${stock_current_price:,.2f}", style={"color": stock_price_color})
-        ],
-        className="text-center"
-    )
+    # Create colored price displays to match crypto tab style
+    stock_price_display = html.Div([
+        html.H4(f"${stock_current_price:,.2f}", className="mb-0", style={"color": stock_price_color}),
+        html.P("Current Price", className="text-muted")
+    ], className="text-center")
     
-    index_price_display = html.H5(
-        children=[
-            f"{index_symbol} Price - Current: ",
-            html.Span(f"${index_current_price:,.2f}", style={"color": index_price_color})
-        ],
+    index_price_display = html.Div([
+        html.H4(f"${index_current_price:,.2f}", className="mb-0", style={"color": index_price_color}),
+        html.P("Current Price", className="text-muted")
+    ],
         className="text-center"
     )
     
@@ -1035,6 +1240,18 @@ def toggle_stock_index_correlation_info(n_clicks, is_open):
     return is_open
 
 
+# Callbacks for toggling crypto-index information sections
+@app.callback(
+    Output("crypto-index-correlation-info-collapse", "is_open"),
+    Input("crypto-index-correlation-info-button", "n_clicks"),
+    State("crypto-index-correlation-info-collapse", "is_open"),
+)
+def toggle_crypto_index_correlation_info(n_clicks, is_open):
+    if n_clicks:
+        return not is_open
+    return is_open
+
+
 @app.callback(
     Output("alpha-info-collapse", "is_open"),
     Input("alpha-info-button", "n_clicks"),
@@ -1057,6 +1274,189 @@ def toggle_beta_info(n_clicks, is_open):
     return is_open
 
 
+@app.callback(
+    Output("crypto-alpha-info-collapse", "is_open"),
+    Input("crypto-alpha-info-button", "n_clicks"),
+    State("crypto-alpha-info-collapse", "is_open"),
+)
+def toggle_crypto_alpha_info(n_clicks, is_open):
+    if n_clicks:
+        return not is_open
+    return is_open
+
+
+@app.callback(
+    Output("crypto-beta-info-collapse", "is_open"),
+    Input("crypto-beta-info-button", "n_clicks"),
+    State("crypto-beta-info-collapse", "is_open"),
+)
+def toggle_crypto_beta_info(n_clicks, is_open):
+    if n_clicks:
+        return not is_open
+    return is_open
+
+
+# Callback for crypto vs crypto index comparison
+@app.callback(
+    [
+        Output("crypto-comparison-chart", "figure"),
+        Output("crypto-index-chart", "figure"),
+        Output("crypto-comparison-price-display", "children"),
+        Output("crypto-index-price-display", "children"),
+        Output("crypto-index-correlation-value", "children"),
+        Output("crypto-alpha-value", "children"),
+        Output("crypto-beta-value", "children"),
+        # Crypto metrics table outputs
+        Output("crypto-comparison-open-row", "children"),
+        Output("crypto-comparison-high-row", "children"),
+        Output("crypto-comparison-low-row", "children"),
+        Output("crypto-comparison-prev-close-row", "children"),
+        Output("crypto-comparison-fifty-day-row", "children"),
+        # Index metrics table outputs
+        Output("crypto-index-open-row", "children"),
+        Output("crypto-index-high-row", "children"),
+        Output("crypto-index-low-row", "children"),
+        Output("crypto-index-prev-close-row", "children"),
+        Output("crypto-index-fifty-day-row", "children")
+    ],
+    [
+        Input("crypto-comparison-dropdown", "value"),
+        Input("crypto-index-dropdown", "value"),
+        Input("refresh-button", "n_clicks")
+    ]
+)
+def update_crypto_index_comparison(crypto_symbol, index_symbol, n_clicks):
+    global CRYPTO_DATA
+    global INDEX_DATA
+    
+    # Fetch crypto data if not in cache or refresh button clicked
+    if crypto_symbol not in CRYPTO_DATA or n_clicks > 0:
+        print(f"Fetching new crypto data for {crypto_symbol} (comparison)...")
+        CRYPTO_DATA[crypto_symbol] = crypto_fetcher.get_crypto_data(crypto_symbol)
+    
+    # Fetch crypto index data if not in cache or refresh button clicked
+    index_key = f"INDEX_{index_symbol}"
+    if index_key not in CRYPTO_DATA or n_clicks > 0:
+        print(f"Fetching new crypto index data for {index_symbol}...")
+        CRYPTO_DATA[index_key] = crypto_fetcher.get_crypto_index_data(index_symbol)
+    
+    # Get the data from cache
+    crypto_data = CRYPTO_DATA[crypto_symbol]
+    index_data = CRYPTO_DATA[index_key]
+    
+    # Get current quotes
+    crypto_quote = crypto_fetcher.get_crypto_quote(crypto_symbol)
+    
+    # Create figures
+    crypto_fig = go.Figure()
+    crypto_fig.add_trace(go.Candlestick(
+        x=crypto_data['date'],
+        open=crypto_data['open'],
+        high=crypto_data['high'],
+        low=crypto_data['low'],
+        close=crypto_data['close'],
+        name=crypto_symbol,
+        increasing_line_color='green',
+        decreasing_line_color='red'
+    ))
+    crypto_fig.update_layout(
+        title="",  # Remove title
+        xaxis_title="Date",
+        yaxis_title="Price ($)",
+        height=400,
+        margin=dict(l=40, r=40, t=40, b=40),
+        xaxis_rangeslider_visible=False  # Hide the rangeslider for a cleaner look
+    )
+    
+    # Format date to remove year
+    crypto_fig.update_xaxes(tickformat='%b %d')
+    
+    index_fig = go.Figure()
+    index_fig.add_trace(go.Candlestick(
+        x=index_data['date'],
+        open=index_data['open'],
+        high=index_data['high'],
+        low=index_data['low'],
+        close=index_data['close'],
+        name=index_symbol,
+        increasing_line_color='green',
+        decreasing_line_color='red'
+    ))
+    index_fig.update_layout(
+        title="",  # Remove title
+        xaxis_title="Date",
+        yaxis_title="Price ($)",
+        height=400,
+        margin=dict(l=40, r=40, t=40, b=40),
+        xaxis_rangeslider_visible=False  # Hide the rangeslider for a cleaner look
+    )
+    
+    # Format date to remove year
+    index_fig.update_xaxes(tickformat='%b %d')
+    
+    # Create price displays
+    current_crypto_price = crypto_quote.get('price', crypto_data['close'].iloc[-1])
+    crypto_opening_price = crypto_data['open'].iloc[-1] if not crypto_data.empty else 0
+    
+    # Determine price color based on comparison with opening price
+    crypto_price_color = "green" if current_crypto_price >= crypto_opening_price else "red"
+    
+    # Create colored price display
+    crypto_price_display = html.Div([
+        html.H4(f"${current_crypto_price:,.2f}", className="mb-0", style={"color": crypto_price_color}),
+        html.P("Current Price", className="text-muted")
+    ], className="text-center")
+    
+    current_index_price = index_data['close'].iloc[-1]
+    index_opening_price = index_data['open'].iloc[-1] if not index_data.empty else 0
+    
+    # Determine price color based on comparison with opening price
+    index_price_color = "green" if current_index_price >= index_opening_price else "red"
+    
+    # Create colored price display
+    index_price_display = html.Div([
+        html.H4(f"${current_index_price:,.2f}", className="mb-0", style={"color": index_price_color}),
+        html.P("Current Price", className="text-muted")
+    ], className="text-center")
+    
+    # Calculate comparison metrics
+    comparison = DataProcessor.compare_assets(crypto_data, index_data)
+    
+    # Format values
+    correlation = f"{comparison['correlation']:.2f}"
+    relative_performance = comparison['relative_performance']
+    alpha = f"{relative_performance:.2f}%"
+    
+    # Calculate beta (volatility ratio)
+    beta = f"{comparison['volatility_ratio']:.2f}"
+    
+    # Calculate metrics for crypto
+    crypto_metrics = DataProcessor.calculate_metrics(crypto_data)
+    
+    # Calculate metrics for index
+    index_metrics = DataProcessor.calculate_metrics(index_data)
+    
+    # Create table rows for crypto metrics
+    crypto_open_row = [html.Th("Open"), html.Th(f"${crypto_metrics['open']:,.2f}")]
+    crypto_high_row = [html.Td("Day High"), html.Td(f"${crypto_metrics['high']:,.2f}")]
+    crypto_low_row = [html.Td("Day Low"), html.Td(f"${crypto_metrics['low']:,.2f}")]
+    crypto_prev_close_row = [html.Td("Previous Close"), html.Td(f"${crypto_metrics['previous_close']:,.2f}")]
+    crypto_fifty_day_row = [html.Td("Fifty Day Avg"), html.Td(f"${crypto_metrics['fifty_day_avg']:,.2f}")]
+    
+    # Create table rows for index metrics
+    index_open_row = [html.Th("Open"), html.Th(f"${index_metrics['open']:,.2f}")]
+    index_high_row = [html.Td("Day High"), html.Td(f"${index_metrics['high']:,.2f}")]
+    index_low_row = [html.Td("Day Low"), html.Td(f"${index_metrics['low']:,.2f}")]
+    index_prev_close_row = [html.Td("Previous Close"), html.Td(f"${index_metrics['previous_close']:,.2f}")]
+    index_fifty_day_row = [html.Td("Fifty Day Avg"), html.Td(f"${index_metrics['fifty_day_avg']:,.2f}")]
+    
+    return (
+        crypto_fig, index_fig, crypto_price_display, index_price_display, correlation, alpha, beta,
+        crypto_open_row, crypto_high_row, crypto_low_row, crypto_prev_close_row, crypto_fifty_day_row,
+        index_open_row, index_high_row, index_low_row, index_prev_close_row, index_fifty_day_row
+    )
+
+
 # Preload data for default symbols
 def preload_data():
     print("Clearing cached data...")
@@ -1072,6 +1472,8 @@ def preload_data():
     CRYPTO_DATA[DEFAULT_CRYPTO] = crypto_fetcher.get_crypto_data(DEFAULT_CRYPTO)
     # Preload index data for default index
     INDEX_DATA[DEFAULT_INDEX] = stock_fetcher.get_stock_data(DEFAULT_INDEX)
+    # Preload crypto index data for default crypto index (Global Market Cap)
+    CRYPTO_DATA["INDEX_GLOBAL_MCAP"] = crypto_fetcher.get_crypto_index_data("GLOBAL_MCAP")
     print("Data preloading complete!")
 
 if __name__ == "__main__":

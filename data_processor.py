@@ -152,8 +152,19 @@ class DataProcessor:
                 'volatility_ratio': 0
             }
         
+        # Make sure both dataframes have the date column with the same data type (string)
+        df1_copy = df1.copy()
+        df2_copy = df2.copy()
+        
+        # Convert date columns to string format if they're not already
+        if not isinstance(df1_copy['date'].iloc[0], str):
+            df1_copy['date'] = df1_copy['date'].dt.strftime('%Y-%m-%d')
+        
+        if not isinstance(df2_copy['date'].iloc[0], str):
+            df2_copy['date'] = df2_copy['date'].dt.strftime('%Y-%m-%d')
+        
         # Ensure both dataframes have the same dates
-        common_dates = pd.merge(df1, df2, on='date', how='inner')
+        common_dates = pd.merge(df1_copy, df2_copy, on='date', how='inner')
         
         if len(common_dates) < 2:
             return {

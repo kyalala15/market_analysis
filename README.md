@@ -30,14 +30,23 @@ A dashboard for analyzing stocks and cryptocurrencies using Dash, Financial Mode
 
 ## Project Structure
 
-- `app.py`: Main application file
-- `data_fetcher.py`: Module for fetching data from APIs
+- `app.py`: Main application file with Dash layout and callbacks
+- `config.py`: Configuration settings and environment variables
+- `stock_fetcher.py`: Module for fetching stock data from Financial Modeling Prep API
+- `crypto_fetcher.py`: Module for fetching cryptocurrency data from CoinMarketCap API
 - `data_processor.py`: Module for processing and analyzing data
 - `.env`: Environment variables (API keys)
 - `requirements.txt`: Project dependencies
 
 ## Data Source
 
-The application uses mock data by default, which provides realistic patterns without requiring API keys. This is useful for development, testing, or demonstration purposes.
+The application can use either real API data or mock data:
 
-To use real API data, modify the `DEFAULT_USE_MOCK_DATA` variable in `data_fetcher.py` to `False` and ensure you have valid API keys in the `.env` file.
+- **Real API Data**: Fetches live data from Financial Modeling Prep for stocks and CoinMarketCap for cryptocurrencies
+- **Mock Data**: Provides realistic patterns without requiring API keys, useful for development and testing
+
+To switch between real and mock data, modify the `DEFAULT_USE_MOCK_DATA` variable in `config.py`:
+- Set to `True` to use mock data (no API keys required)
+- Set to `False` to use real API data (requires valid API keys in the `.env` file)
+
+For debugging API calls, you can enable verbose logging by setting `DEBUG = True` in `config.py`.
