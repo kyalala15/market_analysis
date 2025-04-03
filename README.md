@@ -11,22 +11,34 @@ A dashboard for analyzing stocks and cryptocurrencies using Dash, Financial Mode
 
 ## Setup
 
-1. Install the required dependencies:
+1. Set up a virtual environment (recommended):
+   ```
+   # Create a virtual environment
+   python -m venv venv
+   
+   # Activate the virtual environment
+   # On macOS/Linux:
+   source venv/bin/activate
+   # On Windows:
+   venv\Scripts\activate
+   ```
+
+2. Install the required dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-2. Set up your API keys (optional if using mock data):
+3. Set up your API keys (optional if using mock data):
    - Get a Financial Modeling Prep API key from [financialmodelingprep.com](https://financialmodelingprep.com/developer/docs/)
    - Get a CoinMarketCap API key from [coinmarketcap.com/api](https://coinmarketcap.com/api/)
    - Add these keys to the `.env` file
 
-3. Run the application:
+4. Run the application:
    ```
    python app.py
    ```
 
-4. Open your browser and navigate to `http://127.0.0.1:8050/`
+5. Open your browser and navigate to `http://127.0.0.1:8050/`
 
 ## Project Structure
 
