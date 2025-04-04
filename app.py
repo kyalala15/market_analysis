@@ -54,7 +54,11 @@ CRYPTO_DATA = {}
 
 # Layout
 app.layout = html.Div([
-    html.H1("Market Analytics", className="text-center my-4"),
+    html.Img(
+        src="/assets/FFLogo.png",  # Path to the logo file
+        className="mx-auto d-block my-4",  # Center the image
+        style={"maxWidth": "400px"}  # Adjust the size as needed
+    ),
     
     # Refresh button
     dbc.Row([
